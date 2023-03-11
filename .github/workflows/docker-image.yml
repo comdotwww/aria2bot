@@ -23,8 +23,8 @@ on:   # 配置触发workflow的事件
 # 定义 APP_NAME 用于 docker build-args
 # 定义 DOCKERHUB_REPO 标记 docker hub repo 名称
 env:
-  APP_NAME: arbot
-  DOCKERHUB_REPO: jwstar/arbot
+  APP_NAME: ${{ secrets.APP_NAME }}
+  DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_REPO }}
 
 jobs:
   main:
@@ -34,6 +34,10 @@ jobs:
       # git checkout 代码
       - name: Checkout
         uses: actions/checkout@v2
+      # 设置时间戳环境变量
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=today::$(date +'%Y-%m-%d_%H-%M')"
       # 设置 QEMU, 后面 docker buildx 依赖此.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -69,6 +73,6 @@ jobs:
             APP_VERSION=${{ env.APP_VERSION }}
           # 生成两个 docker tag: ${APP_VERSION} 和 latest
           tags: |
-            ${{ env.DOCKERHUB_REPO }}:${{ env.APP_VERSION }}          
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.date.outputs.today }}       
             ${{ env.DOCKERHUB_REPO }}:latest
 
