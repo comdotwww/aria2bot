@@ -112,7 +112,9 @@ class Aria2Client:
                                                  #force_document=True
                                                  )
                         await msg.delete()
-                        if IS_DELETED_AFTER_UPLOAD:
+                        # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
+                        size = os.path.getsize(path)
+                        if IS_DELETED_AFTER_UPLOAD and size <= 2147483648:
                             os.unlink(path)
                             await self.bot.send_message(SEND_ID,
                                         '文件已删除===> ' + path,

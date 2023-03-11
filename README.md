@@ -27,7 +27,8 @@ aria2 telegram bot
       SEND_ID: 11111     #可以启动bot后 /start 获取，或者转发消息给 @get_id_bot 
       #      PROXY_IP:   #可选  代理ip
       #      PROXY_PORT:  #可选 代理端口
-      UP_TELEGRAM: 'False' #是否上传电报
+      UP_TELEGRAM: 'False' #下载完成后是否上传到Telegram
+      IS_DELETED_AFTER_UPLOAD: 'False' # 上传Telegram完成后，是否删除该文件
 ```
 
 2.启动
