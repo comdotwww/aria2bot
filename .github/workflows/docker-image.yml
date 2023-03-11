@@ -37,7 +37,7 @@ jobs:
       # 设置时间戳环境变量
       - name: Get current date
         id: date
-        run: echo "::set-output name=today::$(date +'%Y-%m-%d_%H-%M')"
+        run: echo "::set-output name=today::$(date +'%Y%m%d_%H%M%S')"
       # 设置 QEMU, 后面 docker buildx 依赖此.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
