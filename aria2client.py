@@ -93,7 +93,8 @@ class Aria2Client:
                                                  pat + '/' + 'mo-' + filename,
                                                  thumb=pat + '/' + filename + '.jpg',
                                                  supports_streaming=True,
-                                                 progress_callback=callback
+                                                 progress_callback=callback,
+                                                 force_document=False
                                                  )
                         await msg.delete()
                         os.unlink(pat + '/' + filename + '.jpg')
@@ -101,7 +102,8 @@ class Aria2Client:
                     else:
                         await self.bot.send_file(SEND_ID,
                                                  path,
-                                                 progress_callback=callback
+                                                 progress_callback=callback,
+                                                 force_document=True
                                                  )
                         await msg.delete()
                         os.unlink(path)
