@@ -16,9 +16,10 @@ services:
       API_ID: 11111
       API_HASH: 11111
       BOT_TOKEN: 11111:11111
-      JSON_RPC_URL: http://11111:6800/jsonrpc
+      JSON_RPC_URL: http://11111:6800/jsonrpc  # 目前只支持http，暂不支持SSL
       JSON_RPC_TOKEN: 11111
       SEND_ID: 11111
       #      PROXY_IP:   #可选  代理ip
       #      PROXY_PORT:  #可选 代理端口
-      UP_TELEGRAM: 'False' #是否上传电报
+      UP_TELEGRAM: 'False' #下载完成后是否上传到Telegram
+      IS_DELETED_AFTER_UPLOAD: 'False' # 上传Telegram完成后，是否删除该文件

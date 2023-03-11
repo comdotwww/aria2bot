@@ -7,7 +7,10 @@ from aioaria2 import Aria2WebsocketClient
 from util import getFileName, order_moov, imgCoverFromFile
 
 SEND_ID = int(os.getenv('SEND_ID'))
+# 是否上传到Telegram
 UP_TELEGRAM = os.getenv('UP_TELEGRAM', 'False') == 'True'
+# 上传Telegram完成后，是否删除该文件
+IS_DELETED_AFTER_UPLOAD = os.getenv('IS_DELETED_AFTER_UPLOAD', 'False') == 'True'
 
 
 class Aria2Client:
@@ -109,7 +112,11 @@ class Aria2Client:
                                                  #force_document=True
                                                  )
                         await msg.delete()
-                        os.unlink(path)
+                        if IS_DELETED_AFTER_UPLOAD:
+                            os.unlink(path)
+                            await self.bot.send_message(SEND_ID,
+                                        '文件已删除===> ' + path,
+                                        )
 
                 except FileNotFoundError as e:
                     print('文件未找到')
