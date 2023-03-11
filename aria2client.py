@@ -80,7 +80,7 @@ class Aria2Client:
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
                     # 每 0.5 变动刷新进度
                     if upload_rate * 10 // 5 == 0.0:
-                        await bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(upload_rate))
+                        await self.bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(upload_rate))
                     # print(current / total)
 
                 try:
