@@ -75,14 +75,17 @@ class Aria2Client:
                                                   )
 
                 async def callback(current, total):
+                    upload_rate= current / total
                     # print("\r", '正在发送', current, 'out of', total,
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
-                    # await bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(current / total))
-                    print(current / total)
+                    # 每 0.5 变动刷新进度
+                    if upload_rate * 10 // 5 == 0.0:
+                        await bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(upload_rate))
+                    # print(current / total)
 
                 try:
-                    # 单独处理视频上传
-                    if path.endswith('.mp4') or path.endswith('.mkv') or path.endswith('.mov'):
+                    # 单独处理mp4视频上传
+                    if path.endswith('.mp4'):
 
                         pat, filename = os.path.split(path)
                         await order_moov(path, pat + '/' + 'mo-' + filename)
@@ -93,8 +96,8 @@ class Aria2Client:
                                                  pat + '/' + 'mo-' + filename,
                                                  thumb=pat + '/' + filename + '.jpg',
                                                  supports_streaming=True,
-                                                 progress_callback=callback,
-                                                 force_document=False
+                                                 progress_callback=callback
+                                                 #force_document=False
                                                  )
                         await msg.delete()
                         os.unlink(pat + '/' + filename + '.jpg')
@@ -102,14 +105,17 @@ class Aria2Client:
                     else:
                         await self.bot.send_file(SEND_ID,
                                                  path,
-                                                 progress_callback=callback,
-                                                 force_document=True
+                                                 progress_callback=callback
+                                                 #force_document=True
                                                  )
                         await msg.delete()
                         os.unlink(path)
 
                 except FileNotFoundError as e:
                     print('文件未找到')
+                    await self.bot.send_message(SEND_ID,
+                                        '文件未找到===> ' + path,
+                                        )
 
     async def on_download_error(self, trigger, data):
         print(f"===========下载 错误 {data}")
