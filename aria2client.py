@@ -81,8 +81,8 @@ class Aria2Client:
                     print(current / total)
 
                 try:
-                    # 单独处理mp4上传
-                    if '.mp4' in path:
+                    # 单独处理视频上传
+                    if path.endswith('.mp4') or path.endswith('.mkv') or path.endswith('.mov'):
 
                         pat, filename = os.path.split(path)
                         await order_moov(path, pat + '/' + 'mo-' + filename)
