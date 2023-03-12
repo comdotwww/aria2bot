@@ -94,27 +94,52 @@ class Aria2Client:
                         await order_moov(path, pat + '/' + 'mo-' + filename)
                         # 截图
                         await imgCoverFromFile(path, pat + '/' + filename + '.jpg')
-                        os.unlink(path)
-                        await self.bot.send_file(SEND_ID,
-                                                 pat + '/' + 'mo-' + filename,
-                                                 thumb=pat + '/' + filename + '.jpg',
-                                                 supports_streaming=True,
-                                                 progress_callback=callback
-                                                 #force_document=False
-                                                 )
-                        await msg.delete()
-                        os.unlink(pat + '/' + filename + '.jpg')
-                        os.unlink(pat + '/' + 'mo-' + filename)
-                    else:
-                        await self.bot.send_file(SEND_ID,
-                                                 path,
-                                                 progress_callback=callback
-                                                 #force_document=True
-                                                 )
-                        await msg.delete()
+                        # 删除文件
+                        if IS_DELETED_AFTER_UPLOAD:
+                            os.unlink(path)
+                            await self.bot.send_message(SEND_ID,
+                                        '文件已删除===> ' + path,
+                                        )
                         # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
-                        size = os.path.getsize(path)
-                        if IS_DELETED_AFTER_UPLOAD and size <= 2147483648:
+                        if os.path.getsize(pat + '/' + 'mo-' + filename) <= 2147483648:
+                            await self.bot.send_file(SEND_ID,
+                                                    pat + '/' + 'mo-' + filename,
+                                                    thumb=pat + '/' + filename + '.jpg',
+                                                    supports_streaming=True,
+                                                    progress_callback=callback
+                                                    #force_document=False
+                                                    )
+                        else:
+                            await self.bot.send_message(SEND_ID,
+                                        '文件上传失败，大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
+                                        )
+                        await msg.delete()
+                        # 删除文件
+                        if IS_DELETED_AFTER_UPLOAD:
+                            os.unlink(pat + '/' + filename + '.jpg')
+                            os.unlink(pat + '/' + 'mo-' + filename)
+                            await self.bot.send_message(SEND_ID,
+                                        '文件已删除===> ' + pat + '/' + filename + '.jpg',
+                                        )
+                            await self.bot.send_message(SEND_ID,
+                                        '文件已删除===> ' + pat + '/' + 'mo-' + filename,
+                            )
+                    else:
+                        # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
+                        if os.path.getsize(path) <= 2147483648:
+                            await self.bot.send_file(SEND_ID,
+                                                    path,
+                                                    progress_callback=callback
+                                                    #force_document=True
+                                                    )
+                        else:
+                            await self.bot.send_message(SEND_ID,
+                                        '文件上传失败，大小超过2GB===> ' + path,
+                                        )
+                        await msg.delete()
+                        size = 
+                        # 删除文件
+                        if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(path)
                             await self.bot.send_message(SEND_ID,
                                         '文件已删除===> ' + path,
