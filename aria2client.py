@@ -137,7 +137,6 @@ class Aria2Client:
                                         '文件上传失败，大小超过2GB===> ' + path,
                                         )
                         await msg.delete()
-                        size = 
                         # 删除文件
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(path)
