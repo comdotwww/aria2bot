@@ -108,6 +108,12 @@ async def path(event):
     out_dir = text
     await event.reply(f"已设置自定义目录: {out_dir}")
 
+# 自定义上传文件到 Telegram
+# todo
+
+# 自定义上传文件到 OneDrive
+# todo
+
 
 @bot.on(events.NewMessage(pattern="/getpath"))
 async def getpath(event):

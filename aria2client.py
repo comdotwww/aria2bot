@@ -106,12 +106,13 @@ class Aria2Client:
                                                     pat + '/' + 'mo-' + filename,
                                                     thumb=pat + '/' + filename + '.jpg',
                                                     supports_streaming=True,
-                                                    progress_callback=callback
+                                                    progress_callback=callback,
+                                                    caption=filename,
                                                     #force_document=False
                                                     )
                         else:
                             await self.bot.send_message(SEND_ID,
-                                        '文件上传失败，大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
+                                        '文件上传失败, 大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
                                         )
                         await msg.delete()
                         # 删除文件
@@ -129,12 +130,13 @@ class Aria2Client:
                         if os.path.getsize(path) <= 2147483648:
                             await self.bot.send_file(SEND_ID,
                                                     path,
-                                                    progress_callback=callback
+                                                    progress_callback=callback,
+                                                    caption=filename,
                                                     #force_document=True
                                                     )
                         else:
                             await self.bot.send_message(SEND_ID,
-                                        '文件上传失败，大小超过2GB===> ' + path,
+                                        '文件上传失败, 大小超过2GB===> ' + path,
                                         )
                         await msg.delete()
                         # 删除文件
