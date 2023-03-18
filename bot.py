@@ -110,6 +110,15 @@ async def path(event):
 
 # 自定义上传文件到 Telegram
 # todo
+@bot.on(events.NewMessage(pattern="/upload2Tg", from_users=SEND_ID))
+async def path(event):
+    text = event.text;
+    text = text.replace('/upload2Tg ', '')
+    if not text:
+        wait event.reply("请使用 /upload2Tg fileIds 格式上传, 可使用 /getFileId 来获取文件的 id")
+        return
+    
+    
 
 # 自定义上传文件到 OneDrive
 # todo
