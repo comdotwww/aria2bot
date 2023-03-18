@@ -16,13 +16,13 @@ IS_DELETED_AFTER_UPLOAD = os.getenv(
     'IS_DELETED_AFTER_UPLOAD', 'False') == 'True'
 
 # 创建一个内存缓存对象，设置过期时间为 10 * 60 = 600 秒
-try:
-    print(memory_cache)
-except NameError:
-    print('memory_cache is not defined')
-    memory_cache = cache3.MemoryCache(expire=600)
-if not isinstance(memory_cache, cache3.MemoryCache):
-    memory_cache = cache3.MemoryCache(expire=600)
+# try:
+#     print(memory_cache)
+# except NameError:
+#     print('memory_cache is not defined')
+#     memory_cache = cache3.MemoryCache(expire=600)
+# if not isinstance(memory_cache, cache3.MemoryCache):
+memory_cache = cache3.MemoryCache(expire=600)
 
 
 class Aria2Client:
