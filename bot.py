@@ -115,7 +115,7 @@ async def path(event):
     text = event.text;
     text = text.replace('/upload2Tg ', '')
     if not text:
-        wait event.reply("请使用 /upload2Tg fileIds 格式上传, 可使用 /getFileId 来获取文件的 id")
+        await event.reply("请使用 /upload2Tg fileIds 格式上传, 可使用 /getFileId 来获取文件的 id")
         return
     
     
