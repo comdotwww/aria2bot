@@ -88,7 +88,7 @@ class Aria2Client:
 
                 try:
                     # 单独处理mp4视频上传
-                    if path.endswith('.mp4'):
+                    if path.lower().endswith('.mp4'):
 
                         pat, filename = os.path.split(path)
                         await order_moov(path, pat + '/' + 'mo-' + filename)
