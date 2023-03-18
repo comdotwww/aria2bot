@@ -6,11 +6,23 @@ from aioaria2 import Aria2WebsocketClient
 
 from util import getFileName, order_moov, imgCoverFromFile
 
+from cache3 import MemoryCache
+
 SEND_ID = int(os.getenv('SEND_ID'))
 # 是否上传到Telegram
 UP_TELEGRAM = os.getenv('UP_TELEGRAM', 'False') == 'True'
 # 上传Telegram完成后，是否删除该文件
-IS_DELETED_AFTER_UPLOAD = os.getenv('IS_DELETED_AFTER_UPLOAD', 'False') == 'True'
+IS_DELETED_AFTER_UPLOAD = os.getenv(
+    'IS_DELETED_AFTER_UPLOAD', 'False') == 'True'
+
+# 创建一个内存缓存对象，设置过期时间为 10 * 60 = 600 秒
+try:
+    print(memory_cache)
+except NameError:
+    print('memory_cache is not defined')
+    memory_cache = MemoryCache(expire=600)
+if not isinstance(memory_cache, MemoryCache):
+    memory_cache = MemoryCache(expire=600)
 
 
 class Aria2Client:
@@ -35,7 +47,6 @@ class Aria2Client:
         # self.client.unregister(self.on_download_pause, "aria2.onDownloadPause")
         # self.client.unregister(self.on_download_complete, "aria2.onDownloadComplete")
         # self.client.unregister(self.on_download_error, "aria2.onDownloadError")
-
 
     async def on_download_start(self, trigger, data):
         print(f"===========下载 开始 {data}")
@@ -78,17 +89,23 @@ class Aria2Client:
                                                   )
 
                 # 最近一次上传进度
-                last_upload_rate = 0.0
+                # last_upload_rate = 0.0
+                # 创建一个缓存项
+                if memory_cache.get(path) is None:
+                    memory_cache.set(path, 0.0, expire=30)
+
                 async def callback(current, total):
                     # 当前上传进度
-                    upload_rate= round(current / total, 3)
+                    upload_rate = round(current / total, 3)
+                    last_upload_rate = memory_cache.get(path)
                     # 不小于 0.5 变动刷新进度
-                    if last_upload_rate == 0.0:
+                    if last_upload_rate is None or last_upload_rate == 0.0:
                         last_upload_rate = upload_rate
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
                     elif last_upload_rate >= 0.50 and upload_rate - last_upload_rate >= 0.50:
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
                         last_upload_rate = upload_rate
+                    memory_cache.set(path, last_upload_rate, expire=30)
                     # print("\r", '正在发送', current, 'out of', total,
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
                     # if round(upload_rate % 0.50, 2) == 0:
@@ -107,60 +124,60 @@ class Aria2Client:
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(path)
                             await self.bot.send_message(SEND_ID,
-                                        '文件已删除===> ' + path,
-                                        )
+                                                        '文件已删除===> ' + path,
+                                                        )
                         # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
                         if os.path.getsize(pat + '/' + 'mo-' + filename) <= 2147483648:
                             await self.bot.send_file(SEND_ID,
-                                                    pat + '/' + 'mo-' + filename,
-                                                    thumb=pat + '/' + filename + '.jpg',
-                                                    supports_streaming=True,
-                                                    progress_callback=callback,
-                                                    caption=filename,
-                                                    #force_document=False
-                                                    )
+                                                     pat + '/' + 'mo-' + filename,
+                                                     thumb=pat + '/' + filename + '.jpg',
+                                                     supports_streaming=True,
+                                                     progress_callback=callback,
+                                                     caption=filename,
+                                                     # force_document=False
+                                                     )
                         else:
                             await self.bot.send_message(SEND_ID,
-                                        '文件上传失败, 大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
-                                        )
+                                                        '文件上传失败, 大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
+                                                        )
                         await msg.delete()
                         # 删除文件
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(pat + '/' + filename + '.jpg')
                             os.unlink(pat + '/' + 'mo-' + filename)
                             await self.bot.send_message(SEND_ID,
-                                        '文件已删除===> ' + pat + '/' + filename + '.jpg',
-                                        )
+                                                        '文件已删除===> ' + pat + '/' + filename + '.jpg',
+                                                        )
                             await self.bot.send_message(SEND_ID,
-                                        '文件已删除===> ' + pat + '/' + 'mo-' + filename,
-                            )
+                                                        '文件已删除===> ' + pat + '/' + 'mo-' + filename,
+                                                        )
                     else:
                         pat, filename = os.path.split(path)
                         # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
                         if os.path.getsize(path) <= 2147483648:
                             await self.bot.send_file(SEND_ID,
-                                                    path,
-                                                    progress_callback=callback,
-                                                    caption=filename,
-                                                    #force_document=True
-                                                    )
+                                                     path,
+                                                     progress_callback=callback,
+                                                     caption=filename,
+                                                     # force_document=True
+                                                     )
                         else:
                             await self.bot.send_message(SEND_ID,
-                                        '文件上传失败, 大小超过2GB===> ' + path,
-                                        )
+                                                        '文件上传失败, 大小超过2GB===> ' + path,
+                                                        )
                         await msg.delete()
                         # 删除文件
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(path)
                             await self.bot.send_message(SEND_ID,
-                                        '文件已删除===> ' + path,
-                                        )
+                                                        '文件已删除===> ' + path,
+                                                        )
 
                 except FileNotFoundError as e:
                     print('文件未找到')
                     await self.bot.send_message(SEND_ID,
-                                        '文件未找到===> ' + path,
-                                        )
+                                                '文件未找到===> ' + path,
+                                                )
 
     async def on_download_error(self, trigger, data):
         print(f"===========下载 错误 {data}")
