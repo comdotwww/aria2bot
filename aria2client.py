@@ -77,13 +77,22 @@ class Aria2Client:
                                                   '上传中===> ' + path,
                                                   )
 
+                # 最近一次上传进度
+                last_upload_rate = 0.0
                 async def callback(current, total):
-                    upload_rate= current / total
+                    # 当前上传进度
+                    upload_rate= round(current / total, 3)
+                    # 不小于 0.5 变动刷新进度
+                    if last_upload_rate == 0.0:
+                        last_upload_rate = upload_rate
+                        await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
+                    elif last_upload_rate >= 0.50 and upload_rate - last_upload_rate >= 0.50:
+                        await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
+                        last_upload_rate = upload_rate
                     # print("\r", '正在发送', current, 'out of', total,
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
-                    # 每 0.5 变动刷新进度
-                    if round(upload_rate % 0.50, 2) == 0:
-                        await self.bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(upload_rate))
+                    # if round(upload_rate % 0.50, 2) == 0:
+                    #     await self.bot.edit_message(msg, path + ' \n上传中 : {:.2%}'.format(upload_rate))
                     # print(current / total)
 
                 try:
