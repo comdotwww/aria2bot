@@ -6,7 +6,7 @@ from aioaria2 import Aria2WebsocketClient
 
 from util import getFileName, order_moov, imgCoverFromFile
 
-from cache3 import MemoryCache
+import cache3
 
 SEND_ID = int(os.getenv('SEND_ID'))
 # 是否上传到Telegram
@@ -20,9 +20,9 @@ try:
     print(memory_cache)
 except NameError:
     print('memory_cache is not defined')
-    memory_cache = MemoryCache(expire=600)
-if not isinstance(memory_cache, MemoryCache):
-    memory_cache = MemoryCache(expire=600)
+    memory_cache = cache3.MemoryCache(expire=600)
+if not isinstance(memory_cache, cache3.MemoryCache):
+    memory_cache = cache3.MemoryCache(expire=600)
 
 
 class Aria2Client:
