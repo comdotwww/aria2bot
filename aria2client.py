@@ -127,6 +127,7 @@ class Aria2Client:
                                         '文件已删除===> ' + pat + '/' + 'mo-' + filename,
                             )
                     else:
+                        pat, filename = os.path.split(path)
                         # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
                         if os.path.getsize(path) <= 2147483648:
                             await self.bot.send_file(SEND_ID,
