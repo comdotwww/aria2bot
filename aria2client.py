@@ -6,7 +6,7 @@ from aioaria2 import Aria2WebsocketClient
 
 from util import getFileName, order_moov, imgCoverFromFile
 
-import cache3
+from cachetools import TTLCache
 
 SEND_ID = int(os.getenv('SEND_ID'))
 # 是否上传到Telegram
@@ -14,15 +14,8 @@ UP_TELEGRAM = os.getenv('UP_TELEGRAM', 'False') == 'True'
 # 上传Telegram完成后，是否删除该文件
 IS_DELETED_AFTER_UPLOAD = os.getenv(
     'IS_DELETED_AFTER_UPLOAD', 'False') == 'True'
-
-# 创建一个内存缓存对象，设置过期时间为 10 * 60 = 600 秒
-# try:
-#     print(memory_cache)
-# except NameError:
-#     print('memory_cache is not defined')
-#     memory_cache = cache3.MemoryCache(expire=600)
-# if not isinstance(memory_cache, cache3.MemoryCache):
-memory_cache = cache3.MemoryCache(expire=600)
+# 创建一个最大容量为 100 且过期时间为 600 秒的缓存对象
+ttl_cache = TTLCache(maxsize=100, ttl=600)
 
 
 class Aria2Client:
@@ -91,13 +84,13 @@ class Aria2Client:
                 # 最近一次上传进度
                 # last_upload_rate = 0.0
                 # 创建一个缓存项
-                if memory_cache.get(path) is None:
-                    memory_cache.set(path, 0.0, expire=30)
+                if ttl_cache.get(path) is None:
+                    ttl_cache[path] = 0.0
 
                 async def callback(current, total):
                     # 当前上传进度
                     upload_rate = round(current / total, 3)
-                    last_upload_rate = memory_cache.get(path)
+                    last_upload_rate = ttl_cache.get(path)
                     # 不小于 0.5 变动刷新进度
                     if last_upload_rate is None or last_upload_rate == 0.0:
                         last_upload_rate = upload_rate
@@ -105,7 +98,7 @@ class Aria2Client:
                     elif last_upload_rate >= 0.50 and upload_rate - last_upload_rate >= 0.50:
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
                         last_upload_rate = upload_rate
-                    memory_cache.set(path, last_upload_rate, expire=30)
+                    ttl_cache[path] = last_upload_rate
                     # print("\r", '正在发送', current, 'out of', total,
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
                     # if round(upload_rate % 0.50, 2) == 0:
@@ -141,6 +134,9 @@ class Aria2Client:
                                                         '文件上传失败, 大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
                                                         )
                         await msg.delete()
+
+                        # 删除缓存中的数据
+                        del ttl_cache[path]
                         # 删除文件
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(pat + '/' + filename + '.jpg')
