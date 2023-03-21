@@ -8,6 +8,8 @@ from util import getFileName, order_moov, imgCoverFromFile
 
 from cachetools import TTLCache
 
+import time
+
 SEND_ID = int(os.getenv('SEND_ID'))
 # 是否上传到Telegram
 UP_TELEGRAM = os.getenv('UP_TELEGRAM', 'False') == 'True'
@@ -85,20 +87,23 @@ class Aria2Client:
                 # last_upload_rate = 0.0
                 # 创建一个缓存项
                 if ttl_cache.get(path) is None:
-                    ttl_cache[path] = 0.0
+                    # 获取当前时间戳
+                    # 计算秒数
+                    ttl_cache[path] = int(time.time()) % 60
 
                 async def callback(current, total):
                     # 当前上传进度
                     upload_rate = round(current / total, 3)
-                    last_upload_rate = ttl_cache.get(path)
+                    last_upload_timestamp = ttl_cache.get(path)
+                    now_upload_timestamp = int(time.time()) % 60
                     # 不小于 0.5 变动刷新进度
-                    if last_upload_rate is None or last_upload_rate == 0.0:
-                        last_upload_rate = upload_rate
+                    if last_upload_timestamp is None or last_upload_timestamp == 0.0:
+                        last_upload_timestamp = now_upload_timestamp
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
-                    elif last_upload_rate >= 0.50 and upload_rate - last_upload_rate >= 0.50:
+                    elif now_upload_timestamp - last_upload_timestamp >= 5:
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
-                        last_upload_rate = upload_rate
-                    ttl_cache[path] = last_upload_rate
+                        last_upload_timestamp = now_upload_timestamp
+                    ttl_cache[path] = last_upload_timestamp
                     # print("\r", '正在发送', current, 'out of', total,
                     #       'bytes: {:.2%}'.format(current / total), end="", flush=True)
                     # if round(upload_rate % 0.50, 2) == 0:
@@ -106,13 +111,23 @@ class Aria2Client:
                     # print(current / total)
 
                 try:
-                    # 单独处理mp4视频上传
-                    if path.lower().endswith('.mp4'):
+                    # 单独处理视频上传
+                    if path.lower().endswith('.mp4') or path.lower().endswith('.mkv') or path.lower().endswith('.mov') or path.lower().endswith('.flv'):
 
                         pat, filename = os.path.split(path)
-                        await order_moov(path, pat + '/' + 'mo-' + filename)
-                        # 截图
-                        await imgCoverFromFile(path, pat + '/' + filename + '.jpg')
+                        # 判断文件大小 2G=2*1024*1024*1024=2147483648 bytes
+                        if os.path.getsize(pat + '/' + filename) <= 2147483648:
+                            # 视频转化
+                            await order_moov(path, pat + '/' + 'mo-' + filename)
+                            # 截图
+                            await imgCoverFromFile(path, pat + '/' + filename + '.jpg')
+                        else:
+                            await self.bot.send_message(SEND_ID,
+                                                        '文件上传失败, 大小超过2GB===> ' + pat + '/' + 'mo-' + filename,
+                                                        )
+                            # 删除缓存中的数据
+                            del ttl_cache[path]
+                            continue
                         # 删除文件
                         if IS_DELETED_AFTER_UPLOAD:
                             os.unlink(path)

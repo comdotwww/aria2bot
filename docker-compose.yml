@@ -22,4 +22,4 @@ services:
       #      PROXY_IP:   #可选  代理ip
       #      PROXY_PORT:  #可选 代理端口
       UP_TELEGRAM: 'False' #下载完成后是否上传到Telegram
-      IS_DELETED_AFTER_UPLOAD: 'False' # 上传Telegram完成后，是否删除该文件
+      IS_DELETED_AFTER_UPLOAD: 'False' # 上传Telegram完成后，是否删除该源文件
