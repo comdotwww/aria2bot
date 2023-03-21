@@ -96,11 +96,11 @@ class Aria2Client:
                     upload_rate = round(current / total, 3)
                     last_upload_timestamp = ttl_cache.get(path)
                     now_upload_timestamp = int(time.time()) % 60
-                    # 不小于 0.5 变动刷新进度
-                    if last_upload_timestamp is None or last_upload_timestamp == 0.0:
+                    # 每3秒刷新进度
+                    if last_upload_timestamp is None or last_upload_timestamp == 0:
                         last_upload_timestamp = now_upload_timestamp
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
-                    elif now_upload_timestamp - last_upload_timestamp >= 5:
+                    elif now_upload_timestamp - last_upload_timestamp >= 3:
                         await self.bot.edit_message(msg, path + ' \n上传中 : {:.3%}'.format(upload_rate))
                         last_upload_timestamp = now_upload_timestamp
                     ttl_cache[path] = last_upload_timestamp

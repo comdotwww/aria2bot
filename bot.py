@@ -29,7 +29,8 @@ if PROXY_PORT is None or PROXY_IP is None:
 else:
     proxy = (python_socks.ProxyType.HTTP, PROXY_IP, int(PROXY_PORT))
 
-bot = TelegramClient(None, API_ID, API_HASH, proxy=proxy).start(bot_token=BOT_TOKEN)
+bot = TelegramClient(None, API_ID, API_HASH,
+                     proxy=proxy).start(bot_token=BOT_TOKEN)
 
 # 自定义目录绝对路径
 out_dir = ''
@@ -48,7 +49,7 @@ async def main():
     ar.client.onDownloadComplete(ar.on_download_complete)
     ar.client.onDownloadError(ar.on_download_error)
     bot.add_event_handler(BotCallbackHandler)
-    print('bot启动了')
+    print('pid=' + str(os.getpid()) + ' , bot启动了')
 
 
 def get_menu(is_def_dir):
@@ -99,7 +100,7 @@ async def handler(event):
 
 @bot.on(events.NewMessage(pattern="/path", from_users=SEND_ID))
 async def path(event):
-    text = event.text;
+    text = event.text
     text = text.replace('/path ', '')
     if not text.startswith('/'):
         await event.reply("目录必须是绝对路径")
@@ -110,15 +111,16 @@ async def path(event):
 
 # 自定义上传文件到 Telegram
 # todo
+
+
 @bot.on(events.NewMessage(pattern="/upload2Tg", from_users=SEND_ID))
 async def path(event):
-    text = event.text;
+    text = event.text
     text = text.replace('/upload2Tg ', '')
     if not text:
         await event.reply("请使用 /upload2Tg fileIds 格式上传, 可使用 /getFileId 来获取文件的 id")
         return
-    
-    
+
 
 # 自定义上传文件到 OneDrive
 # todo
@@ -195,8 +197,6 @@ async def send_welcome(event):
     if not is_def_dir and out_dir != '':
         exta_dic['dir'] = out_dir
 
-
-
     # http 磁力链接
     if 'http' in text or 'magnet' in text:
 
@@ -207,7 +207,8 @@ async def send_welcome(event):
                 uris=[text],
                 options=exta_dic,
             )
-        pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        pattern = re.compile(
+            r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         res2 = re.findall(pattern, text)
 
         for text in res2:
@@ -262,7 +263,8 @@ async def downloading(event):
         size = byte2Readable(int(totalLength))
         speed = hum_convert(int(downloadSpeed))
 
-        send_str = send_str + '任务名称: <b>' + fileName + '</b>\n进度: ' + prog + '\n大小: ' + size + '\n速度: ' + speed + '/s\n\n'
+        send_str = send_str + '任务名称: <b>' + fileName + '</b>\n进度: ' + \
+            prog + '\n大小: ' + size + '\n速度: ' + speed + '/s\n\n'
     if send_str == '':
         await event.respond('个别任务无法识别名称，请使用aria2Ng查看', parse_mode='html')
         return
@@ -285,12 +287,13 @@ async def waiting(event):
         size = byte2Readable(int(totalLength))
         speed = hum_convert(int(downloadSpeed))
 
-        send_str = send_str + '任务名称: ' + fileName + '\n进度: ' + prog + '\n大小: ' + size + '\n速度: ' + speed + '\n\n'
+        send_str = send_str + '任务名称: ' + fileName + '\n进度: ' + \
+            prog + '\n大小: ' + size + '\n速度: ' + speed + '\n\n'
     await event.respond(send_str, parse_mode='html')
 
 
 async def stoped(event):
-    tasks = await  ar.client.tellStopped(0, 500)
+    tasks = await ar.client.tellStopped(0, 500)
 
     if len(tasks) == 0:
         await event.respond('没有已完成或停止的任务', parse_mode='markdown')
@@ -305,7 +308,8 @@ async def stoped(event):
         size = byte2Readable(int(totalLength))
         speed = hum_convert(int(downloadSpeed))
 
-        send_str = send_str + '任务名称: ' + fileName + '\n进度: ' + prog + '\n大小: ' + size + '\n速度: ' + speed + '\n\n'
+        send_str = send_str + '任务名称: ' + fileName + '\n进度: ' + \
+            prog + '\n大小: ' + size + '\n速度: ' + speed + '\n\n'
     await event.respond(send_str, parse_mode='html')
 
 
@@ -348,7 +352,7 @@ async def removeTask(event):
     for task in tasks:
         tempTask.append(task)
     # 正在等待的任务
-    tasks = await  ar.client.tellWaiting(0, 1000)
+    tasks = await ar.client.tellWaiting(0, 1000)
     for task in tasks:
         tempTask.append(task)
     if len(tempTask) == 0:
@@ -366,14 +370,14 @@ async def removeTask(event):
 
 async def removeAll(event):
     # 过滤 已完成或停止
-    tasks = await   ar.client.tellStopped(0, 500)
+    tasks = await ar.client.tellStopped(0, 500)
 
     if len(tasks) == 0:
         await event.respond('没有要清空的任务', parse_mode='html')
         return
 
     for task in tasks:
-        await  ar.client.removeDownloadResult(task['gid'])
+        await ar.client.removeDownloadResult(task['gid'])
         dir = task['dir']
 
     try:
@@ -390,17 +394,17 @@ async def removeAll(event):
 
 # 调用暂停
 async def pause(event, gid):
-    await  ar.client.pause(gid)
+    await ar.client.pause(gid)
 
 
 # 调用恢复
 async def unpause(event, gid):
-    await  ar.client.unpause(gid)
+    await ar.client.unpause(gid)
 
 
 # 调用删除
 async def delToTask(event, gid):
-    await  ar.client.remove(gid)
+    await ar.client.remove(gid)
     await bot.send_message(SEND_ID, '任务删除成功')
 
 
