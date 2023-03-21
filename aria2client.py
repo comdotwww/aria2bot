@@ -153,9 +153,10 @@ class Aria2Client:
                         # 删除缓存中的数据
                         del ttl_cache[path]
                         # 删除文件
+                        os.unlink(pat + '/' + filename + '.jpg')
+                        os.unlink(pat + '/' + 'mo-' + filename)
                         if IS_DELETED_AFTER_UPLOAD:
-                            os.unlink(pat + '/' + filename + '.jpg')
-                            os.unlink(pat + '/' + 'mo-' + filename)
+                            os.unlink(path)
                             await self.bot.send_message(SEND_ID,
                                                         '文件已删除===> ' + pat + '/' + filename + '.jpg',
                                                         )
